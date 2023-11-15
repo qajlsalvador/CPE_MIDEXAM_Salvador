@@ -1,0 +1,69 @@
+---
+
+- name: Prerequisities
+  dnf:
+    name:
+      - wget
+      - java-1.8.0-openjdk
+      - which
+      - epel-release
+      - openssl
+      - autoconf
+    state: present
+
+- name: add ELastic searh
+  shell: rpm --import https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: add repository
+  copy:
+    content: |
+      [elasticsearch-7.x]
+      name=Elasticsearch repository for 7.x packages
+      baseurl=https://artifacts.elastic.co/packages/7.x/yum
+      gpgcheck=1
+      gpgkey=https://artifacts.elastic.co/GPG-KEY-elasticsearch
+      enabled=1
+      autorefresh=1
+      type=rpm-md
+    dest: /etc/yum.repos.d/elasticsearch.repo
+
+- name: Install Elastic search
+  dnf:
+    name: elasticsearch
+    state: present
+
+- name: start elasticsearch
+  systemd:
+    name: elasticsearch
+    enabled: yes
+    state: started
+
+- name: Kibana Installation
+  dnf:
+    name: kibana
+    state: present
+
+- name: start Kibana
+  systemd:
+    name: kibana
+    enabled: yes
+    state: started
+
+- name: Logstash installation
+  dnf:
+    name: logstash
+    state: present
+
+- name: start logstash
+  systemd:
+    name: logstash
+    enabled: yes
+    state: started
+
+- name: restart ELS and Kibana
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - elasticsearch
+    - kibana

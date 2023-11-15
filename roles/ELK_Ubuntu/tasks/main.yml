@@ -1,0 +1,48 @@
+---
+- name: Install prerequisites
+  apt:
+    name:
+      - curl
+      - apt-transport-https
+      - default-jre
+      - software-properties-common
+    state: present
+
+- name: Elasticsearch Key
+  apt_key:
+    url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+
+- name: Elasticsearch repository
+  apt_repository:
+    repo: "deb https://artifacts.elastic.co/packages/7.x/apt stable main"
+    state: present
+
+- name: Elastisearch install
+  apt:
+    name: elasticsearch
+    state: present
+    update_cache: yes
+
+- name: Kibana install
+  apt:
+    name: kibana
+    state: present
+
+- name: Logstash install
+  apt:
+    name: logstash
+    state: present
+
+- name: start Logstash service
+  service:
+    name: logstash
+    enabled: yes
+    state: started
+
+- name: Restart Elasticsearch and kibana
+  systemd:
+    name: "{{ item }}"
+    state: restarted
+  loop:
+    - elasticsearch
+    - kibana

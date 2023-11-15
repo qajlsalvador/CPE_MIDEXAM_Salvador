@@ -1,0 +1,61 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+    - name: Update CentOS server
+      dnf:
+        update_cache: yes
+        name: "*"
+        state: latest
+      when: ansible_distribution == "CentOS"
+
+    - name: epel-release update
+      dnf:
+        name:
+          - epel-release
+        state: latest
+      when: ansible_distribution == "CentOS"
+
+    - name: Update Ubuntu server
+      apt:
+        update_cache: yes
+        state: latest
+      when: ansible_distribution == "Ubuntu"
+
+- hosts: Ubuntu
+  become: true
+  roles:
+    - ELK_Ubuntu
+
+- hosts: Ubuntu
+  become: true
+  roles:
+    - GPI_Ubuntu
+
+- hosts: Ubuntu
+  become: true
+  roles:
+    - LAMPS_Ubuntu
+
+- hosts: Ubuntu
+  become: true
+  roles:
+    - Nagios_Ubuntu
+
+- hosts: CentOS
+  become: true
+  roles:
+    - ELK_CentOS
+
+- hosts: CentOS
+  become: true
+  roles:
+    - GPI_CentOS
+
+- hosts: CentOS
+  become: true
+  roles:
+    - LAMPS_CentOS
+

@@ -1,0 +1,72 @@
+---
+- name: Insalling dependecies
+  apt:
+    name:
+      - apt-transport-https
+      - wget
+      - curl
+      - software-properties-common
+    state: present
+
+- name: Grafana repository key
+  apt_key:
+    url: https://packages.grafana.com/gpg.key
+    state: present
+
+- name: Grafana repository
+  apt_repository:
+    repo: deb https://packages.grafana.com/oss/deb stable main
+    state: present
+
+- name: Grafana Installation
+  apt:
+    name: grafana
+    state: present
+    update_cache: yes
+
+- name: start Grafana service
+  systemd:
+    name: grafana-server
+    enabled: yes
+    state: started
+
+- name: influxDB apt key
+  apt_key:
+    url: https://repos.influxdata.com/influxdb.key
+    state: present
+
+- name: Import missing key
+  apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: D8FF8E1F7DF8B07E
+    state: present
+
+- name: switch to apt
+  command: apt update --allow-releaseinfo-change
+
+- name: influxDB apt repository
+  apt_repository:
+    repo: deb https://repos.influxdata.com/ubuntu bionic stable
+    state: present
+
+- name: influxDB installation
+  apt:
+    name: influxdb
+    state: present
+
+- name: start influx service
+  systemd:
+    name: influxdb
+    enabled: yes
+    state: started
+
+- name: Prometheus Installation
+  apt:
+    name: prometheus
+    state: latest
+
+- name: start prometheus
+  service:
+    name: prometheus
+    state: restarted
+    enabled: true

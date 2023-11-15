@@ -1,0 +1,28 @@
+---
+- name: Intall dependencies
+  dnf:
+    name:
+      - httpd
+      - mariadb-server
+      - php-mysql
+      - mariadb
+      - php
+    state: latest
+
+- name: ports needed for Lamp
+  shell: |
+    sudo firewall-cmd --permanent --zone=public --add-service=http
+    sudo firewall-cmd --permanent --zone=public --add-service=https
+    sudo firewall-cmd --reload
+
+- name: start apache service
+  service:
+    name: httpd
+    state: started
+    enabled: true
+
+- name: start mariadb
+  service:
+    name: mariadb
+    state: started
+    enabled: true

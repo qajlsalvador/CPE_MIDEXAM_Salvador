@@ -1,0 +1,71 @@
+---
+
+- name: Download Grafana
+  get_url:
+    url: https://dl.grafana.com/enterprise/release/grafana-enterprise-9.2.2-1.x86_64.rpm
+    dest: /tmp/grafana-enterprise-9.2.2-1.x86_64.rpm
+
+- name: intalling grafana
+  yum:
+    name: /tmp/grafana-enterprise-9.2.2-1.x86_64.rpm
+
+- name: enable grafana
+  service:
+    name: grafana-server
+    enabled: yes
+
+- name: service file
+  replace:
+    path: /usr/lib/systemd/system/grafana-server.service
+    regexp: "TimeoutStartSec=75"
+    replace: "TimeoutStartSec=500"
+
+- name: start grafana
+  service:
+    name: grafana-server
+    enabled: true
+    state: started
+
+- name: InfluxDB repository
+  copy:
+    content: |
+      [influxdb]
+      name = InfluxDB Repository
+      baseurl = https://repos.influxdata.com/rhel/7/x86_64/stable/
+      enabled = 1
+      gpgcheck = 0
+      gpgkey = https://repos.influxdata.com/influxdb.key
+    dest: /etc/yum.repos.d/influxdb.repo
+
+- name: influxDB installation
+  dnf:
+    name: influxdb
+    state: present
+
+- name: start InfluxDB
+  systemd:
+    name: influxdb
+    state: started
+    enabled: yes
+
+- name: download Prometheus
+  get_url:
+    url: "https://github.com/prometheus/prometheus/releases/download/v2.30.3/prometheus-2.30.3.linux-amd64.tar.gz"
+    dest: /tmp/prometheus-2.30.3.linux-amd64.tar.gz
+
+- name: extracting prometheus
+  unarchive:
+    src: /tmp/prometheus-2.30.3.linux-amd64.tar.gz
+    dest: /tmp
+    remote_src: yes
+
+- name: move prometheus
+  shell: |
+    mv /tmp/prometheus-2.30.3.linux-amd64/prometheus /usr/local/bin/
+  args:
+    creates: /usr/local/bin/prometheus
+
+- name: start prometheus
+  command: nohup /usr/local/bin/prometheus --config.file=/etc/prometheus/prometheus.yml
+  async: 300
+  poll: 0
